@@ -1,44 +1,58 @@
----
-- name: Enabled Internet services
+--- 
+- name: Enable Internet Services
   hosts: serverb.lab.example.com
   become: yes
   tasks:
-    - name: Install yum packages
+    - name: Install yum reop
       yum: 
-        name: "{{ item }}"
+        name:
+          - httpd
+          - mariadb-server
+          - php
+          - php-mysqlnd
+          - firewalld
         state: latest
-      loop:
-        - firewalld
-        - httpd
-        - mariadb-server
-        - php
-        - php-mysqlnd
 
-    - name: Enable Firewall for httpd
+    - name: Enable firewall service
+      service:
+        name: firewalld
+        state: started
+        enabled: true
+
+    - name: configure firewall for http
       firewalld:
-        service: httpd
-        permanent: yes
-        immediate: yes
+        service: http
+        permanent: true
         state: enabled
+        immediate: yes
 
-    - name: Enabled Httpd and mariadb service
-      service: "{{ item }}"
-      enabled: yes
-      state: started 
+    - name: start httpd servie
+      service:
+        name: httpd
+        state: started
+        enabled: true
 
-    - name: Copy index.php page
+    - name: enabled mariadb service
+      service:
+        name: mariadb
+        state: started
+        enabled: true
+        
+    - name: Download foo.conf
       get_url:
         url: http://materials.example.com/labs/playbook-review/index.php
-        dest: /var/www/html/index.php
-        mode: 0644
-- name: Verify the web page
+        dest: /var/www/html/
+        mode: '0644'
+
+- name: Test web page on conrol node
   hosts: localhost
-  tasks: 
-    - name: Browse web page
+  tasks:
+    - name: browse
       uri:
-        url: http://serverb.example.com
-        return_content: yes
+        url: http://serverb.lab.example.com
         status_code: 200
+
+
 
 
 
