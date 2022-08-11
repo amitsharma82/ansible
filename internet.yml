@@ -1,0 +1,46 @@
+---
+- name: Enabled Internet services
+  hosts: serverb.lab.example.com
+  become: yes
+  tasks:
+    - name: Install yum packages
+      yum: 
+        name: "{{ item }}"
+        state: latest
+      loop:
+        - firewalld
+        - httpd
+        - mariadb-server
+        - php
+        - php-mysqlnd
+
+    - name: Enable Firewall for httpd
+      firewalld:
+        service: httpd
+        permanent: yes
+        immediate: yes
+        state: enabled
+
+    - name: Enabled Httpd and mariadb service
+      service: "{{ item }}"
+      enabled: yes
+      state: started 
+
+    - name: Copy index.php page
+      get_url:
+        url: http://materials.example.com/labs/playbook-review/index.php
+        dest: /var/www/html/index.php
+        mode: 0644
+- name: Verify the web page
+  hosts: localhost
+  tasks: 
+    - name: Browse web page
+      uri:
+        url: http://serverb.example.com
+        return_content: yes
+        status_code: 200
+
+
+
+
+
